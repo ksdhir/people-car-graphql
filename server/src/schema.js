@@ -109,10 +109,16 @@ const typeDefs = `
     personId: String
   }
 
+  type PersonWithCars {
+    person: Person,
+    cars: [Car]
+  }
+
   type Query {
     people: [Person]
     person(id: String!): Person
     carsOfPerson(personId: String!): [Car]
+    peoplWithCars: [PersonWithCars]
   }
 
   type Mutation {
@@ -128,6 +134,14 @@ const typeDefs = `
 const resolvers = {
   Query: {
     people: () => people,
+    peoplWithCars: () => {
+      return people.map((person) => {
+        return {
+          person,
+          cars: cars.filter((car) => car.personId === person.id),
+        };
+      });
+    },
     person: (root, args) => {
       return find(people, { id: args.id });
     },
