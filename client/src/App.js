@@ -1,9 +1,11 @@
 import './App.css'
 import Title from './components/layout/Title'
-import AddPeople from './components/forms/AddPeople'
-import AddCar from './components/forms/AddCar'
+import UpsertPerson from './components/forms/UpsertPerson'
+import UpsertCar from './components/forms/UpsertCar'
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
 // import Contacts from './components/lists/Contacts'
+
+import RecordsSection from './components/sections/Record'
 
 import { Divider } from "antd";
 
@@ -21,15 +23,18 @@ const App = () => {
         <Divider>
           <h2>Add Person</h2>
         </Divider>
-        <AddPeople />
+        <UpsertPerson type={"Add"} />
         {/* <Contacts /> */}
         <Divider>
           <h2>Add Car</h2>
         </Divider>
-        <AddCar />
+        <UpsertCar type={"Add"} />
+        {/* Records Section */}
         <Divider>
           <h2>Records</h2>
         </Divider>
+        <RecordsSection />
+
       </div>
     </ApolloProvider>
   )

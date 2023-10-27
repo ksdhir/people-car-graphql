@@ -3,32 +3,95 @@ import { Button, Form, Input, InputNumber } from "antd";
 import { useEffect, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { ADD_CAR, GET_PEOPLE_WITH_CARS } from "../../graphql/queries";
+import { ADD_CAR, GET_PEOPLE_WITH_CARS, UPDATE_CAR } from "../../graphql/queries";
 
 // import components
 import SelectPerson from "../inputs/SelectItem";
 
-const UpsertCar = ({ type, year, make, model, price, person }) => {
+const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }) => {
 
-  const [id] = useState(uuidv4());
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
 
   const [addCar] = useMutation(ADD_CAR);
+  const [updateCar] = useMutation(UPDATE_CAR);
 
   useEffect(() => {
     forceUpdate({});
   }, []);
 
-  const onFinish = (values) => {
 
+  function insertCarIntoPerson(data, personId, newCar) {
+    // Clone the existing data to avoid modifying it directly
+    const newData = JSON.parse(JSON.stringify(data));
+  
+    // Find the person by their ID
+    const person = newData.peopleWithCars.find(
+      (personWithCars) => personWithCars.person.id === personId
+    );
+  
+    // If the person is found, insert the new car into their cars array
+    if (person) {
+      if (!person.cars) {
+        person.cars = [];
+      }
+      person.cars.push(newCar);
+    }
+  
+    return newData;
+  }
+  
+
+
+  function addNewCar(values) {
+    const { personId, make, model, price, year } = values;
+
+    addCar({
+      variables: {
+        id: uuidv4(),
+        personId,
+        make,
+        model,
+        price: price.toString(),
+        year: year.toString(),
+      },
+
+      update: (cache, { data: { addCar } }) => {
+        const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
+
+        const newData = insertCarIntoPerson(data, personId, addCar);
+        cache.writeQuery({
+          query: GET_PEOPLE_WITH_CARS,
+          data: {
+            ...newData,
+          }
+        })
+      }
+    });
+  }
+
+  function updateCarById(data, carIdToUpdate, updatedCarData) {
+    // Clone the existing data to avoid modifying it directly
+    const newData = JSON.parse(JSON.stringify(data));
+  
+    // Find the person with the car to update
+    for (const personWithCars of newData.peopleWithCars) {
+      const carToUpdate = personWithCars.cars.find((car) => car.id === carIdToUpdate);
+      if (carToUpdate) {
+        // Update the car data
+        Object.assign(carToUpdate, updatedCarData);
+        break;
+      }
+    }
+  
+    return newData;
+  }
+
+  function updateExistingCar(values) {
 
     const { personId, make, model, price, year } = values;
 
-    console.log(values)
-    return
-
-    addCar({
+    updateCar({
       variables: {
         id,
         personId,
@@ -37,20 +100,34 @@ const UpsertCar = ({ type, year, make, model, price, person }) => {
         price: price.toString(),
         year: year.toString(),
       },
-      update: (cache, { data: { addCar } }) => {
+      update: (cache, { data: { updateCar } }) => {
         const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
-        console.log(data);
 
-        console.log("PENDING UPDATE");
+        console.log(data)
+        // const updatedData = updateCarById(data, updateCar.id, updateCar);
+
         // cache.writeQuery({
-        //   query: GET_PEOPLE,
+        //   query: GET_PEOPLE_WITH_CARS,
         //   data: {
-        //     ...data,
-        //     contacts: [...data.contacts, addPerson]
+        //     ...updatedData,
         //   }
         // })
+
+
       }
     });
+
+  }
+
+
+  const onFinish = (values) => {
+
+    if (type === "Update") {
+      updateExistingCar(values);
+      //onButtonClick();
+    } else {
+      addNewCar(values);
+    }   
   };
 
   function handleSelectedPerson(val) {
@@ -59,7 +136,7 @@ const UpsertCar = ({ type, year, make, model, price, person }) => {
 
   return (
     <Form
-      name="add-car-form"
+      name={`${type}-car-form-${id}`}
       layout="inline"
       size="large"
       style={{ marginBottom: "30px" }}
@@ -129,14 +206,16 @@ const UpsertCar = ({ type, year, make, model, price, person }) => {
             type="primary"
             htmlType="submit"
             disabled={
+              (type === "Update" ? undefined :
               !form.isFieldsTouched(true) ||
-              form.getFieldsError().filter(({ errors }) => errors.length).length
+              form.getFieldsError().filter(({ errors }) => errors.length).length)
             }
           >
             {type === "Add" ? "Add Car" : "Update Car"}
           </Button>
         )}
       </Form.Item>
+      {type === "Update" && <Button onClick={onButtonClick}>Cancel</Button>}
     </Form>
   );
 };

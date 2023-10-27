@@ -223,6 +223,19 @@ const resolvers = {
 
       return car;
     },
+    removeCar: (root, args) => {
+      const removedCar = find(cars, { id: args.id });
+
+      if (!removedCar) {
+        throw new Error(`Couldn't find car with id ${args.id}`);
+      }
+
+      remove(cars, (c) => {
+        return c.id === removedCar.id;
+      });
+
+      return removedCar;
+    }
   },
 };
 

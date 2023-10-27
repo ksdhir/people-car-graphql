@@ -3,9 +3,9 @@ import { useMutation } from "@apollo/client";
 import { REMOVE_PERSON, GET_PEOPLE_WITH_CARS } from "../../graphql/queries";
 
 const RemovePerson = ({ id }) => {
-  const [removeContact] = useMutation(REMOVE_PERSON, {
+  const [removePerson] = useMutation(REMOVE_PERSON, {
 
-    update: (cache, { data: { removeContact } }) => {
+    update: (cache, { data: { removePerson } }) => {
       const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
 
       const filteredData = data.peopleWithCars.filter((personObj) => {
@@ -23,11 +23,11 @@ const RemovePerson = ({ id }) => {
 
   const handleButtonClick = () => {
     let result = window.confirm(
-      "Are you sure you want to delete this contact?"
+      "Are you sure you want to delete this person?"
     );
 
     if (result) {
-      removeContact({
+      removePerson({
         variables: {
           id,
         },

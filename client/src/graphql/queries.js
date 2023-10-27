@@ -21,7 +21,7 @@ import { gql } from "@apollo/client";
 // `;
 
 export const ADD_PERSON = gql`
-  mutation AddPerson($id: String!, $firstName: String!, $lastName: String!) {
+  mutation UpsertPerson($id: String!, $firstName: String!, $lastName: String!) {
     addPerson(id: $id, firstName: $firstName, lastName: $lastName) {
       id
       firstName
@@ -94,7 +94,7 @@ export const GET_PEOPLE = gql`
 `;
 
 export const ADD_CAR = gql`
-  mutation AddCar(
+  mutation UpsertCar(
     $id: String!
     $year: String!
     $make: String!

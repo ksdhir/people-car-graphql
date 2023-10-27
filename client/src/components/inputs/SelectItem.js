@@ -1,32 +1,41 @@
 import { Select } from "antd";
-import { useState } from "react";
+
+import { GET_PEOPLE } from '../../graphql/queries'
+import { useQuery } from "@apollo/client";
 
 const SelectItem = (props) => {
-  
+
 
   const handleChange = (value) => {
-    console.log(value);
-    // { value: "lucy", key: "lucy", label: "Lucy (101)" }
+    console.log(value)
+    props.onChange(value)
   };
+
+  const { loading, error, data } = useQuery(GET_PEOPLE);
+
+  if (loading) return "Loading...";
+  if (error) return `Error! ${error.message}`;
+
+  const peopleList = data.peopleWithCars.map((person) => {
+    return {
+      value: person.person.id,
+      label: `${person.person.firstName} ${person.person.lastName}`,
+    };
+  });
+
+  console.log(peopleList)
+
+  console.log(props.defaultSelectedPerson)
 
   return (
     <Select
-     defaultValue={props.defaultValue}
+     defaultValue={props.defaultSelectedPerson}
       placeholder="Select a person"
       style={{
         width: 120,
       }}
       onChange={handleChange}
-      options={[
-        {
-          value: "jack",
-          label: "Jack (100)",
-        },
-        {
-          value: "lucy",
-          label: "Lucy (101)",
-        },
-      ]}
+      options={peopleList}
     />
   );
 };
