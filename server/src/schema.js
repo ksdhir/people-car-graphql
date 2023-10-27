@@ -116,8 +116,6 @@ const typeDefs = `
 
   type Query {
     people: [Person]
-    person(id: String!): Person
-    carsOfPerson(personId: String!): [Car]
     peopleWithCars: [PersonWithCars]
     personWithCars(id: String!): PersonWithCars
   }
@@ -142,12 +140,6 @@ const resolvers = {
           cars: cars.filter((car) => car.personId === person.id),
         };
       });
-    },
-    person: (root, args) => {
-      return find(people, { id: args.id });
-    },
-    carsOfPerson: (root, args) => {
-      return cars.filter((car) => car.personId === args.personId);
     },
     personWithCars: (root, args) => {
       const person = find(people, { id: args.id });

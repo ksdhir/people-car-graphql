@@ -53,9 +53,6 @@ const UpsertPerson = ({ onButtonClick, id, type, firstName, lastName }) => {
   }
 
   function updateExistingPerson(values) {
-    console.log(values);
-    console.log(id);
-    console.log("update values of existing person");
 
     const { firstName, lastName } = values;
 

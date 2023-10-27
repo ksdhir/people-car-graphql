@@ -23,9 +23,6 @@ const SelectItem = (props) => {
     };
   });
 
-  console.log(peopleList)
-
-  console.log(props.defaultSelectedPerson)
 
   return (
     <Select

@@ -22,7 +22,6 @@ const UpsertCar = ({
   onButtonClick,
   person,
 }) => {
-  console.log(person);
 
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
@@ -135,8 +134,6 @@ const UpsertCar = ({
   function updateExistingCar(values) {
     const { personId, make, model, price, year } = values;
 
-    console.log(personId);
-    console.log(person.value);
 
     updateCar({
       variables: {
@@ -253,7 +250,11 @@ const UpsertCar = ({
 
       {/* Select a person */}
 
-      <Form.Item label="Person" name="personId">
+      <Form.Item
+        label="Person"
+        name="personId"
+        rules={[{ required: true, message: "Please select a person" }]}
+      >
         <SelectPerson
           type={type}
           defaultSelectedPerson={person}

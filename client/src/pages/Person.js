@@ -22,9 +22,6 @@ const Person = () => {
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error :</p>
 
-  console.log(data);
-
-
   const { person, cars } = data.personWithCars;
 
 
