@@ -10,15 +10,15 @@ import { gql } from "@apollo/client";
 //   }
 // `;
 
-export const GET_PERSON = gql`
-  query GetPerson($id: String!) {
-    person(id: $id) {
-      id
-      firstName
-      lastName
-    }
-  }
-`;
+// export const GET_PERSON = gql`
+//   query GetPerson($id: String!) {
+//     person(id: $id) {
+//       id
+//       firstName
+//       lastName
+//     }
+//   }
+// `;
 
 export const ADD_PERSON = gql`
   mutation AddPerson($id: String!, $firstName: String!, $lastName: String!) {
@@ -83,7 +83,7 @@ export const GET_PEOPLE_WITH_CARS = gql`
 
 export const GET_PEOPLE = gql`
   query GetPeople {
-    peoplWithCars {
+    peopleWithCars {
       person {
         id
         firstName

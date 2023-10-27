@@ -118,7 +118,7 @@ const typeDefs = `
     people: [Person]
     person(id: String!): Person
     carsOfPerson(personId: String!): [Car]
-    peoplWithCars: [PersonWithCars]
+    peopleWithCars: [PersonWithCars]
   }
 
   type Mutation {
@@ -134,7 +134,7 @@ const typeDefs = `
 const resolvers = {
   Query: {
     people: () => people,
-    peoplWithCars: () => {
+    peopleWithCars: () => {
       return people.map((person) => {
         return {
           person,
