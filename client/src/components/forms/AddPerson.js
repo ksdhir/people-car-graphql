@@ -3,19 +3,24 @@ import { Button, Form, Input } from "antd";
 import { useEffect, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { ADD_PERSON, GET_PEOPLE_WITH_CARS } from "../../graphql/queries";
+import {
+  ADD_PERSON,
+  GET_PEOPLE_WITH_CARS,
+  UPDATE_PERSON,
+} from "../../graphql/queries";
 
-const AddPerson = () => {
+const AddPerson = ({ onButtonClick, id, type, firstName, lastName }) => {
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
 
   const [addPerson] = useMutation(ADD_PERSON);
+  const [updatePerson] = useMutation(UPDATE_PERSON);
 
   useEffect(() => {
     forceUpdate({});
   }, []);
 
-  const onFinish = (values) => {
+  function addNewPerson(values) {
     const { firstName, lastName } = values;
 
     addPerson({
@@ -45,11 +50,57 @@ const AddPerson = () => {
 
     // clear form
     form.resetFields();
+  }
+
+  function updateExistingPerson(values) {
+    console.log(values);
+    console.log(id);
+    console.log("update values of existing person");
+
+    const { firstName, lastName } = values;
+
+    updatePerson({
+      variables: {
+        id,
+        firstName,
+        lastName,
+      },
+      update: (cache, { data: { updatePerson } }) => {
+        const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
+
+        const updatedData = data.peopleWithCars.map((personObj) => {
+          if (personObj.person.id === id) {
+            return {
+              person: updatePerson,
+              cars: personObj.cars,
+            };
+          } else {
+            return personObj;
+          }
+        });
+
+        cache.writeQuery({
+          query: GET_PEOPLE_WITH_CARS,
+          data: {
+            peopleWithCars: [...updatedData],
+          },
+        });
+      },
+    });
+  }
+
+  const onFinish = (values) => {
+    if (type === "Add") {
+      addNewPerson(values);
+    } else {
+      updateExistingPerson(values);
+      onButtonClick();
+    }
   };
 
   return (
     <Form
-      name="add-person-form"
+      name={`${type}-person-form-${id}`}
       layout="inline"
       size="large"
       style={{ marginBottom: "30px" }}
@@ -82,10 +133,12 @@ const AddPerson = () => {
               form.getFieldsError().filter(({ errors }) => errors.length).length
             }
           >
-            Add Person
+            {type === "Add" ? "Add Person" : "Update Person"}
           </Button>
         )}
       </Form.Item>
+
+      {type === "Update" && <Button onClick={onButtonClick}>Cancel</Button>}
     </Form>
   );
 };
