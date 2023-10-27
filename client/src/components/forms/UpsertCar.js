@@ -3,38 +3,42 @@ import { Button, Form, Input, InputNumber } from "antd";
 import { useEffect, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { ADD_PERSON, GET_PEOPLE } from "../../graphql/queries";
+import { ADD_CAR, GET_PEOPLE_WITH_CARS } from "../../graphql/queries";
 
 // import components
 import SelectPerson from "../inputs/SelectItem";
 
-const AddCar = (props) => {
-
-
-  const type = props.type;
+const UpsertCar = ({ type, year, make, model, price, person }) => {
 
   const [id] = useState(uuidv4());
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
 
-  const [addPerson] = useMutation(ADD_PERSON);
+  const [addCar] = useMutation(ADD_CAR);
 
   useEffect(() => {
     forceUpdate({});
   }, []);
 
   const onFinish = (values) => {
-    const { firstName, lastName } = values;
 
-    addPerson({
+
+    const { personId, make, model, price, year } = values;
+
+    console.log(values)
+    return
+
+    addCar({
       variables: {
         id,
-        firstName,
-        lastName,
+        personId,
+        make,
+        model,
+        price: price.toString(),
+        year: year.toString(),
       },
-
-      update: (cache, { data: { addPerson } }) => {
-        const data = cache.readQuery({ query: GET_PEOPLE });
+      update: (cache, { data: { addCar } }) => {
+        const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
         console.log(data);
 
         console.log("PENDING UPDATE");
@@ -45,9 +49,13 @@ const AddCar = (props) => {
         //     contacts: [...data.contacts, addPerson]
         //   }
         // })
-      },
+      }
     });
   };
+
+  function handleSelectedPerson(val) {
+    //console.log(val)
+  }
 
   return (
     <Form
@@ -65,6 +73,7 @@ const AddCar = (props) => {
         rules={[{ required: true, message: "Please enter an year" }]}
       >
         <InputNumber
+          defaultValue={year}
           style={{
             width: 80,
           }}
@@ -79,7 +88,7 @@ const AddCar = (props) => {
         name="make"
         rules={[{ required: true, message: "Please enter the make" }]}
       >
-        <Input placeholder="Make" />
+        <Input defaultValue={make} placeholder="Make" />
       </Form.Item>
 
       {/* The model of the car */}
@@ -88,7 +97,7 @@ const AddCar = (props) => {
         name="model"
         rules={[{ required: true, message: "Please enter the model" }]}
       >
-        <Input placeholder="Model" />
+        <Input defaultValue={model} placeholder="Model" />
       </Form.Item>
 
       {/* The price of the car */}
@@ -98,6 +107,7 @@ const AddCar = (props) => {
         rules={[{ required: true, message: "Please enter the price" }]}
       >
         <InputNumber
+          defaultValue={price}
           prefix="$"
           style={{
             width: 80,
@@ -108,8 +118,8 @@ const AddCar = (props) => {
 
       {/* Select a person */}
 
-      <Form.Item label="Person" name="Person">
-        <SelectPerson type={type} defaultSelectedPerson={null} />
+      <Form.Item label="Person" name="personId">
+        <SelectPerson type={type} defaultSelectedPerson={person} onChange={handleSelectedPerson}  />
       </Form.Item>
 
       {/* Form Update Button */}
@@ -123,7 +133,7 @@ const AddCar = (props) => {
               form.getFieldsError().filter(({ errors }) => errors.length).length
             }
           >
-            Add Car
+            {type === "Add" ? "Add Car" : "Update Car"}
           </Button>
         )}
       </Form.Item>
@@ -131,4 +141,4 @@ const AddCar = (props) => {
   );
 };
 
-export default AddCar;
+export default UpsertCar;
