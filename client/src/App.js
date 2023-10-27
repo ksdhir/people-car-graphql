@@ -1,8 +1,11 @@
 import './App.css'
 import Title from './components/layout/Title'
-import AddContact from './components/forms/AddContact'
+import AddPeople from './components/forms/AddPeople'
+import AddCar from './components/forms/AddCar'
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
-import Contacts from './components/lists/Contacts'
+// import Contacts from './components/lists/Contacts'
+
+import { Divider } from "antd";
 
 const client = new ApolloClient({
   uri: 'http://localhost:4000/graphql',
@@ -14,8 +17,19 @@ const App = () => {
     <ApolloProvider client={client}>
       <div className='App'>
         <Title />
-        <AddContact />
-        <Contacts />
+        <Divider />
+        <Divider>
+          <h2>Add Person</h2>
+        </Divider>
+        <AddPeople />
+        {/* <Contacts /> */}
+        <Divider>
+          <h2>Add Car</h2>
+        </Divider>
+        <AddCar />
+        <Divider>
+          <h2>Records</h2>
+        </Divider>
       </div>
     </ApolloProvider>
   )
