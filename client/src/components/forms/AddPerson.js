@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 import { ADD_PERSON, GET_PEOPLE_WITH_CARS } from "../../graphql/queries";
 
 const AddPerson = () => {
-  const [id] = useState(uuidv4());
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
 
@@ -21,7 +20,7 @@ const AddPerson = () => {
 
     addPerson({
       variables: {
-        id,
+        id: uuidv4(),
         firstName,
         lastName,
       },
@@ -43,6 +42,9 @@ const AddPerson = () => {
         });
       },
     });
+
+    // clear form
+    form.resetFields();
   };
 
   return (
