@@ -1,5 +1,3 @@
-import { Divider } from "antd";
-
 const Title = () => {
   const styles = getStyles();
 

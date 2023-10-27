@@ -5,6 +5,7 @@ import { useState } from "react";
 import RemovePerson from "../buttons/RemovePerson";
 import UpsertPerson from "../forms/UpsertPerson";
 import PersonCardCard from "./PersonCarCard";
+import { Link } from "react-router-dom";
 
 const PersonCard = (props) => {
   const [editMode, setEditMode] = useState(false);
@@ -47,6 +48,10 @@ const PersonCard = (props) => {
               />
             </List.Item>
           ))}
+            {/* Link to person page */}
+            <Link to={`/person/${id}`}>
+              Learn More
+            </Link>
         </Card>
       )}
     </div>

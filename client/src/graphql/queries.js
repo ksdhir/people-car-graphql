@@ -159,3 +159,22 @@ export const REMOVE_CAR = gql`
     }
   }
 `;
+
+export const GET_PERSON_WITH_CARS = gql`
+  query GetPersonWithCars($id: String!) {
+    personWithCars(id: $id) {
+      person {
+        id
+        firstName
+        lastName
+      }
+      cars {
+        id
+        year
+        make
+        model
+        price
+      }
+    }
+  }
+`;
