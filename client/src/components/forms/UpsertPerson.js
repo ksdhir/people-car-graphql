@@ -106,6 +106,10 @@ const UpsertPerson = ({ onButtonClick, id, type, firstName, lastName }) => {
       style={{ marginBottom: "30px" }}
       form={form}
       onFinish={onFinish}
+      initialValues={{
+        firstName,
+        lastName,
+      }}
     >
       <Form.Item
         label="First Name"
@@ -129,7 +133,8 @@ const UpsertPerson = ({ onButtonClick, id, type, firstName, lastName }) => {
             type="primary"
             htmlType="submit"
             disabled={
-              !form.isFieldsTouched(true) ||
+              (!form.isFieldTouched("firstName") &&
+                !form.isFieldTouched("lastName")) ||
               form.getFieldsError().filter(({ errors }) => errors.length).length
             }
           >

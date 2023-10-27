@@ -34,7 +34,7 @@ const PersonCardCard = ({ year, price, make, model, id, person }) => {
             <EditOutlined key="edit" onClick={handleButtonClick} />,
             <RemoveCar id={id} />,
           ]}
-          title={`${year} ${make} ${model} -> $ ${price}`}
+          title={`${year} ${make} ${model} -> $ ${parseFloat(price).toLocaleString()}`}
         ></Card>
       )}
     </div>

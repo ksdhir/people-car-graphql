@@ -3,12 +3,26 @@ import { Button, Form, Input, InputNumber } from "antd";
 import { useEffect, useState } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { ADD_CAR, GET_PEOPLE_WITH_CARS, UPDATE_CAR } from "../../graphql/queries";
+import {
+  ADD_CAR,
+  GET_PEOPLE_WITH_CARS,
+  UPDATE_CAR,
+} from "../../graphql/queries";
 
 // import components
 import SelectPerson from "../inputs/SelectItem";
 
-const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }) => {
+const UpsertCar = ({
+  type,
+  year,
+  make,
+  model,
+  price,
+  id,
+  onButtonClick,
+  person,
+}) => {
+  console.log(person);
 
   const [form] = Form.useForm();
   const [, forceUpdate] = useState();
@@ -20,16 +34,15 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
     forceUpdate({});
   }, []);
 
-
   function insertCarIntoPerson(data, personId, newCar) {
     // Clone the existing data to avoid modifying it directly
     const newData = JSON.parse(JSON.stringify(data));
-  
+
     // Find the person by their ID
     const person = newData.peopleWithCars.find(
       (personWithCars) => personWithCars.person.id === personId
     );
-  
+
     // If the person is found, insert the new car into their cars array
     if (person) {
       if (!person.cars) {
@@ -37,11 +50,9 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
       }
       person.cars.push(newCar);
     }
-  
+
     return newData;
   }
-  
-
 
   function addNewCar(values) {
     const { personId, make, model, price, year } = values;
@@ -49,7 +60,7 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
     addCar({
       variables: {
         id: uuidv4(),
-        personId,
+        personId: personId.toString(),
         make,
         model,
         price: price.toString(),
@@ -64,37 +75,73 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
           query: GET_PEOPLE_WITH_CARS,
           data: {
             ...newData,
-          }
-        })
-      }
+          },
+        });
+      },
     });
+
+    form.resetFields();
   }
 
   function updateCarById(data, carIdToUpdate, updatedCarData) {
     // Clone the existing data to avoid modifying it directly
     const newData = JSON.parse(JSON.stringify(data));
-  
+
     // Find the person with the car to update
     for (const personWithCars of newData.peopleWithCars) {
-      const carToUpdate = personWithCars.cars.find((car) => car.id === carIdToUpdate);
+      const carToUpdate = personWithCars.cars.find(
+        (car) => car.id === carIdToUpdate
+      );
       if (carToUpdate) {
         // Update the car data
         Object.assign(carToUpdate, updatedCarData);
         break;
       }
     }
-  
+
+    return newData;
+  }
+
+  function moveCarIntoPerson(data, updatedCar, previousPersonId, newPersonId) {
+    // deep clone the data
+    const newData = JSON.parse(JSON.stringify(data));
+
+    // remove the car from the person it was in
+    const previousPerson = newData.peopleWithCars.find(
+      (personWithCars) => personWithCars.person.id === previousPersonId
+    );
+
+    if (previousPerson) {
+      previousPerson.cars = previousPerson.cars.filter(
+        (car) => car.id !== updatedCar.id
+      );
+    }
+
+    // add the car to the new person
+    const newPerson = newData.peopleWithCars.find(
+      (personWithCars) => personWithCars.person.id === newPersonId
+    );
+
+    if (newPerson) {
+      if (!newPerson.cars) {
+        newPerson.cars = [];
+      }
+      newPerson.cars.push(updatedCar);
+    }
+
     return newData;
   }
 
   function updateExistingCar(values) {
-
     const { personId, make, model, price, year } = values;
+
+    console.log(personId);
+    console.log(person.value);
 
     updateCar({
       variables: {
         id,
-        personId,
+        personId: personId.toString(),
         make,
         model,
         price: price.toString(),
@@ -103,31 +150,37 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
       update: (cache, { data: { updateCar } }) => {
         const data = cache.readQuery({ query: GET_PEOPLE_WITH_CARS });
 
-        console.log(data)
-        // const updatedData = updateCarById(data, updateCar.id, updateCar);
+        let updatedData = null;
 
-        // cache.writeQuery({
-        //   query: GET_PEOPLE_WITH_CARS,
-        //   data: {
-        //     ...updatedData,
-        //   }
-        // })
+        if (personId.toString() === person.value.toString()) {
+          updatedData = updateCarById(data, updateCar.id, updateCar);
+        } else {
+          // person gets changed
+          updatedData = moveCarIntoPerson(
+            data,
+            updateCar,
+            person.value,
+            personId
+          );
+        }
 
-
-      }
+        cache.writeQuery({
+          query: GET_PEOPLE_WITH_CARS,
+          data: {
+            ...updatedData,
+          },
+        });
+      },
     });
-
   }
 
-
   const onFinish = (values) => {
-
     if (type === "Update") {
       updateExistingCar(values);
-      //onButtonClick();
+      onButtonClick();
     } else {
       addNewCar(values);
-    }   
+    }
   };
 
   function handleSelectedPerson(val) {
@@ -142,6 +195,13 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
       style={{ marginBottom: "30px" }}
       form={form}
       onFinish={onFinish}
+      initialValues={{
+        year,
+        make,
+        model,
+        price,
+        personId: person?.value,
+      }}
     >
       {/* The year of the car */}
       <Form.Item
@@ -150,7 +210,6 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
         rules={[{ required: true, message: "Please enter an year" }]}
       >
         <InputNumber
-          defaultValue={year}
           style={{
             width: 80,
           }}
@@ -165,7 +224,7 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
         name="make"
         rules={[{ required: true, message: "Please enter the make" }]}
       >
-        <Input defaultValue={make} placeholder="Make" />
+        <Input placeholder="Make" />
       </Form.Item>
 
       {/* The model of the car */}
@@ -174,7 +233,7 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
         name="model"
         rules={[{ required: true, message: "Please enter the model" }]}
       >
-        <Input defaultValue={model} placeholder="Model" />
+        <Input placeholder="Model" />
       </Form.Item>
 
       {/* The price of the car */}
@@ -184,7 +243,6 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
         rules={[{ required: true, message: "Please enter the price" }]}
       >
         <InputNumber
-          defaultValue={price}
           prefix="$"
           style={{
             width: 80,
@@ -196,7 +254,11 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
       {/* Select a person */}
 
       <Form.Item label="Person" name="personId">
-        <SelectPerson type={type} defaultSelectedPerson={person} onChange={handleSelectedPerson}  />
+        <SelectPerson
+          type={type}
+          defaultSelectedPerson={person}
+          onChange={handleSelectedPerson}
+        />
       </Form.Item>
 
       {/* Form Update Button */}
@@ -206,9 +268,12 @@ const UpsertCar = ({ type, year, make, model, price, id, onButtonClick, person }
             type="primary"
             htmlType="submit"
             disabled={
-              (type === "Update" ? undefined :
-              !form.isFieldsTouched(true) ||
-              form.getFieldsError().filter(({ errors }) => errors.length).length)
+              (!form.isFieldTouched("year") &&
+                !form.isFieldTouched("make") &&
+                !form.isFieldTouched("personId") &&
+                !form.isFieldTouched("model") &&
+                !form.isFieldTouched("price")) ||
+              form.getFieldsError().filter(({ errors }) => errors.length).length
             }
           >
             {type === "Add" ? "Add Car" : "Update Car"}
